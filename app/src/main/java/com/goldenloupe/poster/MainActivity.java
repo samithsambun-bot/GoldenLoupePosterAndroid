@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -333,18 +334,31 @@ public class MainActivity extends Activity {
         poster.setPadding(dp(48), dp(6), dp(48), dp(58));
         root.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        poster.addView(header, new LinearLayout.LayoutParams(-1, dp(102)));
+
         ImageView logo = new ImageView(this);
         logo.setImageResource(getResources().getIdentifier("logo", "drawable", getPackageName()));
         logo.setAdjustViewBounds(true);
-        poster.addView(logo, new LinearLayout.LayoutParams(dp(190), dp(92)));
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        header.addView(logo, new LinearLayout.LayoutParams(dp(214), dp(96)));
+
+        LinearLayout titleGroup = new LinearLayout(this);
+        titleGroup.setOrientation(LinearLayout.VERTICAL);
+        titleGroup.setGravity(Gravity.CENTER);
+        header.addView(titleGroup, new LinearLayout.LayoutParams(0, -1, 1f));
 
         TextView title = heading("DAILY GOLD PRICE", 34);
         title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
         title.setGravity(Gravity.CENTER);
-        poster.addView(title);
+        titleGroup.addView(title);
         TextView chineseTitle = heading("今日金价", 29);
         chineseTitle.setGravity(Gravity.CENTER);
-        poster.addView(chineseTitle);
+        titleGroup.addView(chineseTitle);
+
+        header.addView(new View(this), new LinearLayout.LayoutParams(dp(214), 1));
 
         LinearLayout dateBox = new LinearLayout(this);
         dateBox.setOrientation(LinearLayout.VERTICAL);
@@ -427,15 +441,20 @@ public class MainActivity extends Activity {
     private TextView headerCell(String text) {
         TextView cell = tableText(text, 17, true);
         cell.setTextColor(Color.rgb(123, 51, 6));
+        cell.setBackground(cellBackground(Color.rgb(232, 159, 12)));
         return cell;
     }
 
     private TextView productCell(String text) {
-        return tableText(text, 18, false);
+        TextView cell = tableText(text, 18, false);
+        cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        return cell;
     }
 
     private TextView priceCell(String unit) {
-        return tableText("-\n" + unit, 16, false);
+        TextView cell = tableText("-\n" + unit, 16, false);
+        cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        return cell;
     }
 
     private TextView tableText(String text, int sp, boolean bold) {
@@ -446,9 +465,15 @@ public class MainActivity extends Activity {
         view.setGravity(Gravity.CENTER);
         view.setPadding(dp(4), dp(3), dp(4), dp(3));
         if (bold) view.setTypeface(Typeface.DEFAULT_BOLD);
-        view.setBackgroundColor(Color.TRANSPARENT);
         view.setLayoutParams(new TableRow.LayoutParams(0, -1, 1f));
         return view;
+    }
+
+    private GradientDrawable cellBackground(int color) {
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(color);
+        background.setStroke(dp(1), Color.argb(95, 92, 64, 51));
+        return background;
     }
 
     private void renderPrices() {
@@ -527,8 +552,8 @@ public class MainActivity extends Activity {
         ImageView gold = new ImageView(this);
         gold.setImageResource(getResources().getIdentifier("goldbar", "drawable", getPackageName()));
         gold.setAdjustViewBounds(true);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(145), dp(112), Gravity.BOTTOM | Gravity.RIGHT);
-        params.setMargins(0, 0, dp(18), dp(42));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(176), dp(136), Gravity.BOTTOM | Gravity.RIGHT);
+        params.setMargins(0, 0, dp(26), dp(12));
         root.addView(gold, params);
     }
 
