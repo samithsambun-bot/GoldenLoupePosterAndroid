@@ -50,13 +50,7 @@ public class MainActivity extends Activity {
     private WifiManager.MulticastLock multicastLock;
 
     private PriceData prices = new PriceData();
-    private final Runnable syncRunnable = () -> {
-        if (!displayMode && goldBuyInput != null) {
-            readInputs();
-            prices.save(prefs);
-            broadcastPrices();
-        }
-    };
+    private Runnable syncRunnable;
 
     private TextView dateText;
     private TextView timeText;
@@ -92,6 +86,13 @@ public class MainActivity extends Activity {
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         prices = PriceData.fromPrefs(prefs);
+        syncRunnable = () -> {
+            if (!displayMode && goldBuyInput != null) {
+                readInputs();
+                prices.save(prefs);
+                broadcastPrices();
+            }
+        };
         showModePicker();
     }
 
