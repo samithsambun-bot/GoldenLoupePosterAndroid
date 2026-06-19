@@ -43,6 +43,7 @@ import java.util.Locale;
 public class MainActivity extends Activity {
     private static final int SYNC_PORT = 45454;
     private static final String PREFS = "gold_prices";
+    private static final int GOLD_LINE = Color.rgb(205, 159, 64);
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private boolean displayMode = false;
@@ -52,6 +53,15 @@ public class MainActivity extends Activity {
 
     private PriceData prices = new PriceData();
     private Runnable syncRunnable;
+    private final Runnable clockRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (displayMode && dateText != null && timeText != null) {
+                updateDate();
+                handler.postDelayed(this, 1000);
+            }
+        }
+    };
 
     private TextView dateText;
     private TextView timeText;
@@ -100,6 +110,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         listening = false;
+        handler.removeCallbacks(clockRunnable);
+        handler.removeCallbacks(syncRunnable);
         if (multicastLock != null && multicastLock.isHeld()) {
             multicastLock.release();
         }
@@ -150,6 +162,7 @@ public class MainActivity extends Activity {
 
     private void showControlMode() {
         displayMode = false;
+        handler.removeCallbacks(clockRunnable);
 
         ScrollView scroll = new ScrollView(this);
         LinearLayout root = new LinearLayout(this);
@@ -343,6 +356,7 @@ public class MainActivity extends Activity {
         logo.setImageResource(getResources().getIdentifier("logo", "drawable", getPackageName()));
         logo.setAdjustViewBounds(true);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        logo.setOnClickListener(v -> showControlMode());
         header.addView(logo, new LinearLayout.LayoutParams(dp(214), dp(96)));
 
         LinearLayout titleGroup = new LinearLayout(this);
@@ -365,6 +379,7 @@ public class MainActivity extends Activity {
         dateBox.setGravity(Gravity.CENTER);
         dateBox.setPadding(dp(24), dp(5), dp(24), dp(5));
         dateBox.setBackgroundColor(Color.argb(150, 255, 255, 250));
+        dateBox.setOnClickListener(v -> showControlMode());
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
         dateParams.setMargins(0, dp(6), 0, dp(10));
         poster.addView(dateBox, dateParams);
@@ -389,6 +404,7 @@ public class MainActivity extends Activity {
         goldBar(root);
         setContentView(root);
         renderPrices();
+        startClock();
     }
 
     private TableLayout priceTable() {
@@ -472,7 +488,7 @@ public class MainActivity extends Activity {
     private GradientDrawable cellBackground(int color) {
         GradientDrawable background = new GradientDrawable();
         background.setColor(color);
-        background.setStroke(dp(1), Color.argb(95, 92, 64, 51));
+        background.setStroke(1, GOLD_LINE);
         return background;
     }
 
@@ -514,8 +530,13 @@ public class MainActivity extends Activity {
         Date now = new Date();
         dateText.setText("DATE: " + new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(now) +
                 " / 日期: " + new SimpleDateFormat("yyyy年M月d日", Locale.CHINESE).format(now));
-        timeText.setText("LAST UPDATED: " + new SimpleDateFormat("HH:mm", Locale.ENGLISH).format(now) +
-                " / 更新时间: " + new SimpleDateFormat("HH:mm", Locale.ENGLISH).format(now));
+        timeText.setText("TIME: " + new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now) +
+                " / 时间: " + new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now));
+    }
+
+    private void startClock() {
+        handler.removeCallbacks(clockRunnable);
+        handler.post(clockRunnable);
     }
 
     private void footer(FrameLayout root) {
@@ -552,8 +573,8 @@ public class MainActivity extends Activity {
         ImageView gold = new ImageView(this);
         gold.setImageResource(getResources().getIdentifier("goldbar", "drawable", getPackageName()));
         gold.setAdjustViewBounds(true);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(176), dp(136), Gravity.BOTTOM | Gravity.RIGHT);
-        params.setMargins(0, 0, dp(26), dp(12));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(184), dp(142), Gravity.BOTTOM | Gravity.RIGHT);
+        params.setMargins(0, 0, dp(6), -dp(4));
         root.addView(gold, params);
     }
 
