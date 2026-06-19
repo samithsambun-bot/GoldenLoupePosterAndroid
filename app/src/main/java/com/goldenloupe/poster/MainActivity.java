@@ -330,34 +330,34 @@ public class MainActivity extends Activity {
         LinearLayout poster = new LinearLayout(this);
         poster.setOrientation(LinearLayout.VERTICAL);
         poster.setGravity(Gravity.CENTER_HORIZONTAL);
-        poster.setPadding(dp(48), dp(16), dp(48), dp(0));
+        poster.setPadding(dp(48), dp(6), dp(48), dp(58));
         root.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
         ImageView logo = new ImageView(this);
         logo.setImageResource(getResources().getIdentifier("logo", "drawable", getPackageName()));
         logo.setAdjustViewBounds(true);
-        poster.addView(logo, new LinearLayout.LayoutParams(dp(260), dp(128)));
+        poster.addView(logo, new LinearLayout.LayoutParams(dp(190), dp(92)));
 
-        TextView title = heading("DAILY GOLD PRICE", 42);
+        TextView title = heading("DAILY GOLD PRICE", 34);
         title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
         title.setGravity(Gravity.CENTER);
         poster.addView(title);
-        TextView chineseTitle = heading("今日金价", 36);
+        TextView chineseTitle = heading("今日金价", 29);
         chineseTitle.setGravity(Gravity.CENTER);
         poster.addView(chineseTitle);
 
         LinearLayout dateBox = new LinearLayout(this);
         dateBox.setOrientation(LinearLayout.VERTICAL);
         dateBox.setGravity(Gravity.CENTER);
-        dateBox.setPadding(dp(28), dp(8), dp(28), dp(8));
+        dateBox.setPadding(dp(24), dp(5), dp(24), dp(5));
         dateBox.setBackgroundColor(Color.argb(150, 255, 255, 250));
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
-        dateParams.setMargins(0, dp(14), 0, dp(20));
+        dateParams.setMargins(0, dp(6), 0, dp(10));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 23);
+        dateText = heading("", 19);
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 15);
+        timeText = heading("", 12);
         timeText.setGravity(Gravity.CENTER);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
@@ -365,9 +365,9 @@ public class MainActivity extends Activity {
         poster.addView(priceTable(), new LinearLayout.LayoutParams(-1, 0, 1f));
 
         TextView note = new TextView(this);
-        note.setText("Prices are subject to change without prior notice.\nThank you for your trust and support!\n价格如有变动，恕不另行通知。\n感谢您的信任与支持！");
+        note.setText("Prices are subject to change without prior notice. Thank you for your trust and support!\n价格如有变动，恕不另行通知。感谢您的信任与支持！");
         note.setTextColor(Color.rgb(92, 64, 51));
-        note.setTextSize(19);
+        note.setTextSize(14);
         note.setGravity(Gravity.CENTER);
         poster.addView(note);
 
@@ -387,12 +387,9 @@ public class MainActivity extends Activity {
         header.setBackgroundColor(Color.rgb(232, 159, 12));
         header.addView(headerCell("TYPE/种类"));
         header.addView(headerCell("BUY-IN/回收价"));
-        TextView sell = headerCell("SELL/售价");
-        sell.setGravity(Gravity.CENTER);
-        TableRow.LayoutParams sellParams = new TableRow.LayoutParams(0, dp(70), 2f);
-        sellParams.span = 2;
-        header.addView(sell, sellParams);
-        table.addView(header);
+        header.addView(headerCell("SELL/Gram\n售价/克"));
+        header.addView(headerCell("SELL/KG\n售价/公斤"));
+        table.addView(header, new TableLayout.LayoutParams(-1, dp(48)));
 
         addProductRow(table, "Au99.99\n黄金", 0);
         addProductRow(table, "PT999\n铂金999", 1);
@@ -410,7 +407,7 @@ public class MainActivity extends Activity {
         row.addView(buy);
         row.addView(sellGram);
         row.addView(sellKg);
-        table.addView(row, new TableLayout.LayoutParams(-1, dp(122)));
+        table.addView(row, new TableLayout.LayoutParams(-1, 0, 1f));
 
         if (index == 0) {
             goldBuy = buy;
@@ -428,17 +425,17 @@ public class MainActivity extends Activity {
     }
 
     private TextView headerCell(String text) {
-        TextView cell = tableText(text, 23, true);
+        TextView cell = tableText(text, 17, true);
         cell.setTextColor(Color.rgb(123, 51, 6));
         return cell;
     }
 
     private TextView productCell(String text) {
-        return tableText(text, 24, false);
+        return tableText(text, 18, false);
     }
 
     private TextView priceCell(String unit) {
-        return tableText("-\n" + unit, 22, false);
+        return tableText("-\n" + unit, 16, false);
     }
 
     private TextView tableText(String text, int sp, boolean bold) {
@@ -447,7 +444,7 @@ public class MainActivity extends Activity {
         view.setTextSize(sp);
         view.setTextColor(Color.rgb(92, 64, 51));
         view.setGravity(Gravity.CENTER);
-        view.setPadding(dp(6), dp(6), dp(6), dp(6));
+        view.setPadding(dp(4), dp(3), dp(4), dp(3));
         if (bold) view.setTypeface(Typeface.DEFAULT_BOLD);
         view.setBackgroundColor(Color.TRANSPARENT);
         view.setLayoutParams(new TableRow.LayoutParams(0, -1, 1f));
@@ -470,7 +467,7 @@ public class MainActivity extends Activity {
     private void setValue(TextView view, String raw, boolean available, String unit) {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
         view.setText(formatted.equals("-") ? "ENQUIRE / 请咨询" : formatted + "\n" + unit);
-        view.setTextSize(formatted.startsWith("ENQUIRE") ? 16 : 22);
+        view.setTextSize(formatted.startsWith("ENQUIRE") ? 13 : 17);
         view.setTextColor(formatted.startsWith("ENQUIRE") ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
         view.setTypeface(Typeface.DEFAULT_BOLD);
     }
@@ -502,7 +499,7 @@ public class MainActivity extends Activity {
         footer.setOrientation(LinearLayout.HORIZONTAL);
         footer.setPadding(dp(10), 0, dp(10), 0);
         footer.setBackgroundColor(Color.rgb(83, 55, 18));
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, dp(62), Gravity.BOTTOM);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, dp(54), Gravity.BOTTOM);
         root.addView(footer, params);
         footer.addView(footerItem("location", "PHNOM PENH, CAMBODIA"));
         footer.addView(footerItem("telegram", "Telegram: 069 793 168"));
@@ -520,7 +517,7 @@ public class MainActivity extends Activity {
         TextView label = new TextView(this);
         label.setText(text);
         label.setTextColor(Color.WHITE);
-        label.setTextSize(18);
+        label.setTextSize(15);
         label.setPadding(dp(8), 0, 0, 0);
         item.addView(label);
         return item;
@@ -530,8 +527,8 @@ public class MainActivity extends Activity {
         ImageView gold = new ImageView(this);
         gold.setImageResource(getResources().getIdentifier("goldbar", "drawable", getPackageName()));
         gold.setAdjustViewBounds(true);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(240), dp(190), Gravity.BOTTOM | Gravity.RIGHT);
-        params.setMargins(0, 0, dp(20), dp(38));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(145), dp(112), Gravity.BOTTOM | Gravity.RIGHT);
+        params.setMargins(0, 0, dp(18), dp(42));
         root.addView(gold, params);
     }
 
