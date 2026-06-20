@@ -421,10 +421,8 @@ public class MainActivity extends Activity {
         TableRow header = new TableRow(this);
         header.addView(headerCell("TYPE/种类"));
         header.addView(headerCell("BUY-IN/回收价"));
-        TextView sell = headerCell("SELL-OUT/售价");
-        TableRow.LayoutParams sellParams = new TableRow.LayoutParams(0, -1, 2f);
-        sellParams.span = 2;
-        header.addView(sell, sellParams);
+        header.addView(headerCell("SELL-OUT/售价"));
+        header.addView(headerCell(""));
         table.addView(header, new TableLayout.LayoutParams(-1, dp(48)));
 
         addProductRow(table, "Au99.99\n黄金", 0);
