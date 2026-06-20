@@ -382,7 +382,7 @@ public class MainActivity extends Activity {
         dateBox.setOrientation(LinearLayout.VERTICAL);
         dateBox.setGravity(Gravity.CENTER);
         dateBox.setPadding(dp(24), dp(5), dp(24), dp(5));
-        dateBox.setBackgroundColor(Color.argb(150, 255, 255, 250));
+        dateBox.setBackground(roundedBackground(Color.argb(150, 255, 255, 250), dp(18), GOLD_LINE));
         dateBox.setOnClickListener(v -> showControlMode());
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
         dateParams.setMargins(0, dp(6), 0, dp(10));
@@ -415,14 +415,16 @@ public class MainActivity extends Activity {
         TableLayout table = new TableLayout(this);
         table.setStretchAllColumns(true);
         table.setShrinkAllColumns(true);
-        table.setBackgroundColor(Color.argb(145, 255, 255, 250));
+        table.setBackground(roundedBackground(Color.argb(145, 255, 255, 250), dp(14), GOLD_LINE));
+        table.setClipToOutline(true);
 
         TableRow header = new TableRow(this);
-        header.setBackgroundColor(Color.rgb(232, 159, 12));
         header.addView(headerCell("TYPE/种类"));
         header.addView(headerCell("BUY-IN/回收价"));
-        header.addView(headerCell("SELL/Gram\n售价/克"));
-        header.addView(headerCell("SELL/KG\n售价/公斤"));
+        TextView sell = headerCell("SELL-OUT/售价");
+        TableRow.LayoutParams sellParams = new TableRow.LayoutParams(0, -1, 2f);
+        sellParams.span = 2;
+        header.addView(sell, sellParams);
         table.addView(header, new TableLayout.LayoutParams(-1, dp(48)));
 
         addProductRow(table, "Au99.99\n黄金", 0);
@@ -461,7 +463,7 @@ public class MainActivity extends Activity {
     private TextView headerCell(String text) {
         TextView cell = tableText(text, 17, true);
         cell.setTextColor(Color.rgb(123, 51, 6));
-        cell.setBackground(cellBackground(Color.rgb(232, 159, 12)));
+        cell.setBackground(headerBackground());
         return cell;
     }
 
@@ -475,6 +477,8 @@ public class MainActivity extends Activity {
         TextView cell = tableText("", 17, false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        cell.setPadding(dp(4), dp(6), dp(4), dp(14));
         return cell;
     }
 
@@ -497,6 +501,22 @@ public class MainActivity extends Activity {
         return background;
     }
 
+    private GradientDrawable headerBackground() {
+        GradientDrawable background = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{Color.rgb(232, 159, 12), Color.rgb(247, 202, 87), Color.rgb(232, 159, 12)});
+        background.setStroke(1, GOLD_LINE);
+        return background;
+    }
+
+    private GradientDrawable roundedBackground(int color, int radius, int strokeColor) {
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(color);
+        background.setCornerRadius(radius);
+        background.setStroke(1, strokeColor);
+        return background;
+    }
+
     private void renderPrices() {
         updateDate();
         setValue(goldBuy, prices.goldBuy, true, "/Gram--/克");
@@ -516,6 +536,8 @@ public class MainActivity extends Activity {
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
         view.setTextSize(enquire ? 13 : 17);
         view.setTextColor(enquire ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
+        view.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        view.setPadding(dp(4), dp(6), dp(4), dp(14));
         view.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
@@ -527,7 +549,7 @@ public class MainActivity extends Activity {
         styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(styled);
         view.setIncludeFontPadding(false);
-        view.setLineSpacing(dp(1), 1.0f);
+        view.setLineSpacing(dp(7), 1.0f);
     }
 
     private String formatCurrency(String raw) {
