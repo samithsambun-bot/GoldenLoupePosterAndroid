@@ -29,8 +29,6 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -411,19 +409,18 @@ public class MainActivity extends Activity {
         startClock();
     }
 
-    private TableLayout priceTable() {
-        TableLayout table = new TableLayout(this);
-        table.setStretchAllColumns(true);
-        table.setShrinkAllColumns(true);
+    private LinearLayout priceTable() {
+        LinearLayout table = new LinearLayout(this);
+        table.setOrientation(LinearLayout.VERTICAL);
         table.setBackground(roundedBackground(Color.argb(145, 255, 255, 250), dp(14), GOLD_LINE));
         table.setClipToOutline(true);
 
-        TableRow header = new TableRow(this);
-        header.addView(headerCell("TYPE/种类"));
-        header.addView(headerCell("BUY-IN/回收价"));
-        header.addView(headerCell("SELL-OUT/售价"));
-        header.addView(headerCell(""));
-        table.addView(header, new TableLayout.LayoutParams(-1, dp(48)));
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.addView(headerCell("TYPE/种类"), new LinearLayout.LayoutParams(0, -1, 1f));
+        header.addView(headerCell("BUY-IN/回收价"), new LinearLayout.LayoutParams(0, -1, 1f));
+        header.addView(headerCell("SELL-OUT/售价"), new LinearLayout.LayoutParams(0, -1, 2f));
+        table.addView(header, new LinearLayout.LayoutParams(-1, dp(56)));
 
         addProductRow(table, "Au99.99\n黄金", 0);
         addProductRow(table, "PT999\n铂金999", 1);
@@ -431,17 +428,18 @@ public class MainActivity extends Activity {
         return table;
     }
 
-    private void addProductRow(TableLayout table, String name, int index) {
-        TableRow row = new TableRow(this);
+    private void addProductRow(LinearLayout table, String name, int index) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
         row.setBackgroundColor(Color.argb(145, 255, 255, 255));
-        row.addView(productCell(name));
+        row.addView(productCell(name), new LinearLayout.LayoutParams(0, -1, 1f));
         TextView buy = priceCell("/Gram--/克");
         TextView sellGram = priceCell("/Gram--/克");
         TextView sellKg = priceCell("/KG -- /公斤");
-        row.addView(buy);
-        row.addView(sellGram);
-        row.addView(sellKg);
-        table.addView(row, new TableLayout.LayoutParams(-1, 0, 1f));
+        row.addView(buy, new LinearLayout.LayoutParams(0, -1, 1f));
+        row.addView(sellGram, new LinearLayout.LayoutParams(0, -1, 1f));
+        row.addView(sellKg, new LinearLayout.LayoutParams(0, -1, 1f));
+        table.addView(row, new LinearLayout.LayoutParams(-1, 0, 1f));
 
         if (index == 0) {
             goldBuy = buy;
@@ -459,7 +457,7 @@ public class MainActivity extends Activity {
     }
 
     private TextView headerCell(String text) {
-        TextView cell = tableText(text, 17, true);
+        TextView cell = tableText(text, 18, true);
         cell.setTextColor(Color.rgb(123, 51, 6));
         cell.setBackground(headerBackground());
         return cell;
@@ -472,7 +470,7 @@ public class MainActivity extends Activity {
     }
 
     private TextView priceCell(String unit) {
-        TextView cell = tableText("", 17, false);
+        TextView cell = tableText("", 19, false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
         cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
@@ -488,7 +486,6 @@ public class MainActivity extends Activity {
         view.setGravity(Gravity.CENTER);
         view.setPadding(dp(4), dp(3), dp(4), dp(3));
         if (bold) view.setTypeface(Typeface.DEFAULT_BOLD);
-        view.setLayoutParams(new TableRow.LayoutParams(0, -1, 1f));
         return view;
     }
 
@@ -532,7 +529,7 @@ public class MainActivity extends Activity {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
         boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
-        view.setTextSize(enquire ? 13 : 17);
+        view.setTextSize(enquire ? 14 : 19);
         view.setTextColor(enquire ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
         view.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         view.setPadding(dp(4), dp(6), dp(4), dp(14));
@@ -543,11 +540,11 @@ public class MainActivity extends Activity {
         String text = enquire ? price + "\n" + unit : price + "\n" + unit;
         SpannableString styled = new SpannableString(text);
         int unitStart = price.length() + 1;
-        styled.setSpan(new RelativeSizeSpan(enquire ? 0.76f : 0.72f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        styled.setSpan(new RelativeSizeSpan(enquire ? 0.68f : 0.64f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(styled);
         view.setIncludeFontPadding(false);
-        view.setLineSpacing(dp(7), 1.0f);
+        view.setLineSpacing(dp(12), 1.0f);
     }
 
     private String formatCurrency(String raw) {
