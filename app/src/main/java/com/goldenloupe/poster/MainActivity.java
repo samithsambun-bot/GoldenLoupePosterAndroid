@@ -527,7 +527,7 @@ public class MainActivity extends Activity {
         styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(styled);
         view.setIncludeFontPadding(false);
-        view.setLineSpacing(-dp(2), 0.96f);
+        view.setLineSpacing(dp(1), 1.0f);
     }
 
     private String formatCurrency(String raw) {
@@ -547,8 +547,7 @@ public class MainActivity extends Activity {
         Date now = new Date();
         dateText.setText("DATE: " + new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(now) +
                 " / 日期: " + new SimpleDateFormat("yyyy年M月d日", Locale.CHINESE).format(now));
-        timeText.setText("TIME: " + new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now) +
-                " / 时间: " + new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now));
+        timeText.setText(new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now));
     }
 
     private void startClock() {
@@ -564,16 +563,16 @@ public class MainActivity extends Activity {
         footer.setBackgroundColor(Color.rgb(83, 55, 18));
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, dp(54), Gravity.BOTTOM);
         root.addView(footer, params);
-        footer.addView(footerItem("location", "PHNOM PENH, CAMBODIA"));
-        footer.addView(footerItem("telegram", "Telegram: 069 793 168"));
-        footer.addView(footerItem("phone", "Phone: 069 793 168"));
+        footer.addView(footerItem("location", "PHNOM PENH, CAMBODIA"), new LinearLayout.LayoutParams(0, -1, 1f));
+        footer.addView(footerItem("telegram", "Telegram: 069 793 168"), new LinearLayout.LayoutParams(0, -1, 1f));
+        footer.addView(footerItem("phone", "Phone: 069 793 168"), new LinearLayout.LayoutParams(0, -1, 1f));
     }
 
     private LinearLayout footerItem(String image, String text) {
         LinearLayout item = new LinearLayout(this);
         item.setGravity(Gravity.CENTER);
         item.setOrientation(LinearLayout.HORIZONTAL);
-        item.setPadding(dp(12), 0, dp(12), 0);
+        item.setPadding(dp(8), 0, dp(8), 0);
         ImageView icon = new ImageView(this);
         icon.setImageResource(getResources().getIdentifier(image, "drawable", getPackageName()));
         item.addView(icon, new LinearLayout.LayoutParams(dp(24), dp(24)));
@@ -590,8 +589,8 @@ public class MainActivity extends Activity {
         ImageView gold = new ImageView(this);
         gold.setImageResource(getResources().getIdentifier("goldbar", "drawable", getPackageName()));
         gold.setAdjustViewBounds(true);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(190), dp(148), Gravity.BOTTOM | Gravity.RIGHT);
-        params.setMargins(0, 0, -dp(10), -dp(8));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(210), dp(164), Gravity.BOTTOM | Gravity.RIGHT);
+        params.setMargins(0, 0, -dp(54), -dp(10));
         root.addView(gold, params);
     }
 
