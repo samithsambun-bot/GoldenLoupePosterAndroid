@@ -414,6 +414,7 @@ public class MainActivity extends Activity {
         table.setOrientation(LinearLayout.VERTICAL);
         table.setBackground(roundedBackground(Color.argb(145, 255, 255, 250), dp(14), GOLD_LINE));
         table.setClipToOutline(true);
+        table.setElevation(dp(6));
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
@@ -466,6 +467,7 @@ public class MainActivity extends Activity {
     private TextView productCell(String text) {
         TextView cell = tableText(text, 18, false);
         cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        cell.setTypeface(Typeface.DEFAULT_BOLD);
         return cell;
     }
 
@@ -492,7 +494,7 @@ public class MainActivity extends Activity {
     private GradientDrawable cellBackground(int color) {
         GradientDrawable background = new GradientDrawable();
         background.setColor(color);
-        background.setStroke(1, GOLD_LINE);
+        background.setStroke(1, Color.argb(175, 205, 159, 64));
         return background;
     }
 
@@ -500,7 +502,7 @@ public class MainActivity extends Activity {
         GradientDrawable background = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[]{Color.rgb(232, 159, 12), Color.rgb(247, 202, 87), Color.rgb(232, 159, 12)});
-        background.setStroke(1, GOLD_LINE);
+        background.setStroke(1, Color.argb(175, 205, 159, 64));
         return background;
     }
 
@@ -540,7 +542,7 @@ public class MainActivity extends Activity {
         String text = enquire ? price + "\n" + unit : price + "\n" + unit;
         SpannableString styled = new SpannableString(text);
         int unitStart = price.length() + 1;
-        styled.setSpan(new RelativeSizeSpan(enquire ? 0.68f : 0.64f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        styled.setSpan(new RelativeSizeSpan(enquire ? 0.62f : 0.58f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(styled);
         view.setIncludeFontPadding(false);
