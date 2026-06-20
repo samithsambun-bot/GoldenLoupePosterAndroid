@@ -393,7 +393,9 @@ public class MainActivity extends Activity {
         dateBox.addView(dateText);
         dateBox.addView(timeText);
 
-        poster.addView(priceTable(), new LinearLayout.LayoutParams(-1, 0, 1f));
+        LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(-1, 0, 1f);
+        tableParams.setMargins(dp(20), 0, dp(20), 0);
+        poster.addView(priceTable(), tableParams);
 
         TextView note = new TextView(this);
         note.setText("Prices are subject to change without prior notice. Thank you for your trust and support!\n价格如有变动，恕不另行通知。感谢您的信任与支持！");
@@ -409,12 +411,24 @@ public class MainActivity extends Activity {
         startClock();
     }
 
-    private LinearLayout priceTable() {
+    private FrameLayout priceTable() {
+        FrameLayout shell = new FrameLayout(this);
+        shell.setPadding(0, 0, dp(5), dp(6));
+
+        View shadow = new View(this);
+        shadow.setBackground(roundedBackground(Color.argb(52, 64, 38, 10), dp(14), Color.TRANSPARENT));
+        FrameLayout.LayoutParams shadowParams = new FrameLayout.LayoutParams(-1, -1);
+        shadowParams.setMargins(dp(5), dp(7), 0, 0);
+        shell.addView(shadow, shadowParams);
+
         LinearLayout table = new LinearLayout(this);
         table.setOrientation(LinearLayout.VERTICAL);
         table.setBackground(roundedBackground(Color.argb(145, 255, 255, 250), dp(14), GOLD_LINE));
         table.setClipToOutline(true);
         table.setElevation(dp(6));
+        FrameLayout.LayoutParams tableParams = new FrameLayout.LayoutParams(-1, -1);
+        tableParams.setMargins(0, 0, dp(5), dp(6));
+        shell.addView(table, tableParams);
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
@@ -426,7 +440,7 @@ public class MainActivity extends Activity {
         addProductRow(table, "Au99.99\n黄金", 0);
         addProductRow(table, "PT999\n铂金999", 1);
         addProductRow(table, "Silver\n白银", 2);
-        return table;
+        return shell;
     }
 
     private void addProductRow(LinearLayout table, String name, int index) {
@@ -502,7 +516,7 @@ public class MainActivity extends Activity {
         GradientDrawable background = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
                 new int[]{Color.rgb(232, 159, 12), Color.rgb(247, 202, 87), Color.rgb(232, 159, 12)});
-        background.setStroke(1, Color.argb(175, 205, 159, 64));
+        background.setStroke(1, Color.rgb(123, 51, 6));
         return background;
     }
 
@@ -539,11 +553,13 @@ public class MainActivity extends Activity {
     }
 
     private void setPriceText(TextView view, String price, String unit, boolean enquire) {
-        String text = enquire ? price + "\n" + unit : price + "\n" + unit;
+        String text = enquire ? price : price + "\n" + unit;
         SpannableString styled = new SpannableString(text);
-        int unitStart = price.length() + 1;
-        styled.setSpan(new RelativeSizeSpan(enquire ? 0.62f : 0.58f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (!enquire) {
+            int unitStart = price.length() + 1;
+            styled.setSpan(new RelativeSizeSpan(0.58f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
         view.setText(styled);
         view.setIncludeFontPadding(false);
         view.setLineSpacing(dp(12), 1.0f);
