@@ -413,22 +413,14 @@ public class MainActivity extends Activity {
 
     private FrameLayout priceTable() {
         FrameLayout shell = new FrameLayout(this);
-        shell.setPadding(0, 0, dp(5), dp(6));
-
-        View shadow = new View(this);
-        shadow.setBackground(roundedBackground(Color.argb(52, 64, 38, 10), dp(14), Color.TRANSPARENT));
-        FrameLayout.LayoutParams shadowParams = new FrameLayout.LayoutParams(-1, -1);
-        shadowParams.setMargins(dp(5), dp(7), 0, 0);
-        shell.addView(shadow, shadowParams);
+        shell.setForeground(roundedBackground(Color.TRANSPARENT, dp(14), GOLD_LINE));
+        shell.setElevation(dp(8));
 
         LinearLayout table = new LinearLayout(this);
         table.setOrientation(LinearLayout.VERTICAL);
-        table.setPadding(dp(1), dp(1), dp(1), dp(1));
-        table.setBackground(roundedBackground(Color.argb(185, 255, 255, 250), dp(14), GOLD_LINE));
+        table.setBackground(roundedFill(Color.argb(185, 255, 255, 250), dp(14)));
         table.setClipToOutline(true);
-        table.setElevation(dp(6));
         FrameLayout.LayoutParams tableParams = new FrameLayout.LayoutParams(-1, -1);
-        tableParams.setMargins(0, 0, dp(5), dp(6));
         shell.addView(table, tableParams);
 
         LinearLayout header = new LinearLayout(this);
@@ -527,6 +519,13 @@ public class MainActivity extends Activity {
         background.setColor(color);
         background.setCornerRadius(radius);
         background.setStroke(1, strokeColor);
+        return background;
+    }
+
+    private GradientDrawable roundedFill(int color, int radius) {
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(color);
+        background.setCornerRadius(radius);
         return background;
     }
 
