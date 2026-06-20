@@ -12,7 +12,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -468,7 +472,8 @@ public class MainActivity extends Activity {
     }
 
     private TextView priceCell(String unit) {
-        TextView cell = tableText("-\n" + unit, 16, false);
+        TextView cell = tableText("", 17, false);
+        setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
         return cell;
     }
@@ -507,10 +512,22 @@ public class MainActivity extends Activity {
 
     private void setValue(TextView view, String raw, boolean available, String unit) {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
-        view.setText(formatted.equals("-") ? "ENQUIRE / 请咨询" : formatted + "\n" + unit);
-        view.setTextSize(formatted.startsWith("ENQUIRE") ? 13 : 17);
-        view.setTextColor(formatted.startsWith("ENQUIRE") ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
+        boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
+        setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
+        view.setTextSize(enquire ? 13 : 17);
+        view.setTextColor(enquire ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
         view.setTypeface(Typeface.DEFAULT_BOLD);
+    }
+
+    private void setPriceText(TextView view, String price, String unit, boolean enquire) {
+        String text = enquire ? price + "\n" + unit : price + "\n" + unit;
+        SpannableString styled = new SpannableString(text);
+        int unitStart = price.length() + 1;
+        styled.setSpan(new RelativeSizeSpan(enquire ? 0.76f : 0.72f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        view.setText(styled);
+        view.setIncludeFontPadding(false);
+        view.setLineSpacing(-dp(2), 0.96f);
     }
 
     private String formatCurrency(String raw) {
@@ -573,8 +590,8 @@ public class MainActivity extends Activity {
         ImageView gold = new ImageView(this);
         gold.setImageResource(getResources().getIdentifier("goldbar", "drawable", getPackageName()));
         gold.setAdjustViewBounds(true);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(184), dp(142), Gravity.BOTTOM | Gravity.RIGHT);
-        params.setMargins(0, 0, dp(6), -dp(4));
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(190), dp(148), Gravity.BOTTOM | Gravity.RIGHT);
+        params.setMargins(0, 0, -dp(10), -dp(8));
         root.addView(gold, params);
     }
 
