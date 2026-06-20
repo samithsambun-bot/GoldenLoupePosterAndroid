@@ -423,7 +423,8 @@ public class MainActivity extends Activity {
 
         LinearLayout table = new LinearLayout(this);
         table.setOrientation(LinearLayout.VERTICAL);
-        table.setBackground(roundedBackground(Color.argb(145, 255, 255, 250), dp(14), GOLD_LINE));
+        table.setPadding(dp(1), dp(1), dp(1), dp(1));
+        table.setBackground(roundedBackground(Color.argb(185, 255, 255, 250), dp(14), GOLD_LINE));
         table.setClipToOutline(true);
         table.setElevation(dp(6));
         FrameLayout.LayoutParams tableParams = new FrameLayout.LayoutParams(-1, -1);
@@ -475,12 +476,13 @@ public class MainActivity extends Activity {
         TextView cell = tableText(text, 18, true);
         cell.setTextColor(Color.rgb(123, 51, 6));
         cell.setBackground(headerBackground());
+        cell.setPadding(dp(4), dp(3), dp(4), dp(1));
         return cell;
     }
 
     private TextView productCell(String text) {
         TextView cell = tableText(text, 18, false);
-        cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setTypeface(Typeface.DEFAULT_BOLD);
         return cell;
     }
@@ -488,7 +490,7 @@ public class MainActivity extends Activity {
     private TextView priceCell(String unit) {
         TextView cell = tableText("", 19, false);
         setPriceText(cell, "-", unit, false);
-        cell.setBackground(cellBackground(Color.argb(145, 255, 255, 255)));
+        cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         cell.setPadding(dp(4), dp(6), dp(4), dp(14));
         return cell;
@@ -546,9 +548,9 @@ public class MainActivity extends Activity {
         boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
         view.setTextSize(enquire ? 14 : 19);
-        view.setTextColor(enquire ? Color.rgb(138, 101, 49) : Color.rgb(92, 64, 51));
-        view.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-        view.setPadding(dp(4), dp(6), dp(4), dp(14));
+        view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
+        view.setGravity(enquire ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(14));
         view.setTypeface(Typeface.DEFAULT_BOLD);
     }
 
