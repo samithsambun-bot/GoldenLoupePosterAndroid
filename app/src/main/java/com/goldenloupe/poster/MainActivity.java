@@ -3,6 +3,7 @@ package com.goldenloupe.poster;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -346,7 +347,7 @@ public class MainActivity extends Activity {
         LinearLayout poster = new LinearLayout(this);
         poster.setOrientation(LinearLayout.VERTICAL);
         poster.setGravity(Gravity.CENTER_HORIZONTAL);
-        poster.setPadding(dp(48), dp(6), dp(48), dp(58));
+        poster.setPadding(dp(displaySize(48, 30)), dp(6), dp(displaySize(48, 30)), dp(58));
         root.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
         LinearLayout header = new LinearLayout(this);
@@ -366,11 +367,11 @@ public class MainActivity extends Activity {
         titleGroup.setGravity(Gravity.CENTER);
         header.addView(titleGroup, new LinearLayout.LayoutParams(0, -1, 1f));
 
-        TextView title = heading("DAILY GOLD PRICE", 34);
+        TextView title = heading("DAILY GOLD PRICE", displaySize(34, 29));
         title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
         title.setGravity(Gravity.CENTER);
         titleGroup.addView(title);
-        TextView chineseTitle = heading("今日金价", 29);
+        TextView chineseTitle = heading("今日金价", displaySize(29, 24));
         chineseTitle.setGravity(Gravity.CENTER);
         titleGroup.addView(chineseTitle);
 
@@ -386,21 +387,21 @@ public class MainActivity extends Activity {
         dateParams.setMargins(0, dp(6), 0, dp(10));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 19);
+        dateText = heading("", displaySize(19, 16));
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 12);
+        timeText = heading("", displaySize(12, 10));
         timeText.setGravity(Gravity.CENTER);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
 
         LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(-1, 0, 1f);
-        tableParams.setMargins(dp(20), 0, dp(20), 0);
+        tableParams.setMargins(dp(displaySize(20, 6)), 0, dp(displaySize(20, 6)), 0);
         poster.addView(priceTable(), tableParams);
 
         TextView note = new TextView(this);
         note.setText("Prices are subject to change without prior notice. Thank you for your trust and support!\n价格如有变动，恕不另行通知。感谢您的信任与支持！");
         note.setTextColor(Color.rgb(92, 64, 51));
-        note.setTextSize(14);
+        note.setTextSize(displaySize(14, 12));
         note.setGravity(Gravity.CENTER);
         poster.addView(note);
 
@@ -465,7 +466,7 @@ public class MainActivity extends Activity {
     }
 
     private TextView headerCell(String text) {
-        TextView cell = tableText(text, 18, true);
+        TextView cell = tableText(text, displaySize(18, 15), true);
         cell.setTextColor(Color.rgb(123, 51, 6));
         cell.setBackground(headerBackground());
         cell.setPadding(dp(4), dp(3), dp(4), dp(1));
@@ -473,14 +474,14 @@ public class MainActivity extends Activity {
     }
 
     private TextView productCell(String text) {
-        TextView cell = tableText(text, 18, false);
+        TextView cell = tableText(text, displaySize(18, 15), false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setTypeface(Typeface.DEFAULT_BOLD);
         return cell;
     }
 
     private TextView priceCell(String unit) {
-        TextView cell = tableText("", 19, false);
+        TextView cell = tableText("", displaySize(19, 16), false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
@@ -546,7 +547,7 @@ public class MainActivity extends Activity {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
         boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
-        view.setTextSize(enquire ? 14 : 19);
+        view.setTextSize(enquire ? displaySize(14, 12) : displaySize(19, 16));
         view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
         view.setGravity(enquire ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(14));
@@ -615,7 +616,7 @@ public class MainActivity extends Activity {
         TextView label = new TextView(this);
         label.setText(text);
         label.setTextColor(Color.WHITE);
-        label.setTextSize(15);
+        label.setTextSize(displaySize(15, 13));
         label.setPadding(dp(8), 0, 0, 0);
         item.addView(label);
         return item;
@@ -688,6 +689,15 @@ public class MainActivity extends Activity {
 
     private int dp(int value) {
         return (int) (value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private int displaySize(int tablet, int tv) {
+        return isTelevision() ? tv : tablet;
+    }
+
+    private boolean isTelevision() {
+        int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_TYPE_MASK;
+        return mode == Configuration.UI_MODE_TYPE_TELEVISION;
     }
 
     public static class PriceData {
