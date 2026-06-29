@@ -481,7 +481,7 @@ public class MainActivity extends Activity {
     }
 
     private TextView priceCell(String unit) {
-        TextView cell = tableText("", displaySize(19, 16, 14), false);
+        TextView cell = tableText("", displaySize(23, 19, 17), false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
@@ -510,7 +510,12 @@ public class MainActivity extends Activity {
     private GradientDrawable headerBackground() {
         GradientDrawable background = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{Color.rgb(232, 159, 12), Color.rgb(247, 202, 87), Color.rgb(232, 159, 12)});
+                new int[]{
+                        Color.rgb(226, 151, 0),
+                        Color.rgb(246, 185, 35),
+                        Color.rgb(255, 232, 146),
+                        Color.rgb(239, 165, 10),
+                        Color.rgb(226, 151, 0)});
         background.setStroke(1, Color.rgb(123, 51, 6));
         return background;
     }
@@ -547,11 +552,11 @@ public class MainActivity extends Activity {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
         boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
-        view.setTextSize(enquire ? displaySize(14, 12, 10) : displaySize(19, 16, 14));
+        view.setTextSize(enquire ? displaySize(14, 12, 10) : displaySize(23, 19, 17));
         view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
         view.setGravity(enquire ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(14));
-        view.setTypeface(Typeface.DEFAULT_BOLD);
+        view.setTypeface(enquire ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
     }
 
     private void setPriceText(TextView view, String price, String unit, boolean enquire) {
@@ -559,8 +564,8 @@ public class MainActivity extends Activity {
         SpannableString styled = new SpannableString(text);
         if (!enquire) {
             int unitStart = price.length() + 1;
-            styled.setSpan(new RelativeSizeSpan(0.58f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            styled.setSpan(new ForegroundColorSpan(Color.rgb(126, 119, 108)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styled.setSpan(new RelativeSizeSpan(0.44f), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styled.setSpan(new ForegroundColorSpan(Color.rgb(150, 145, 137)), unitStart, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         view.setText(styled);
         view.setIncludeFontPadding(false);
