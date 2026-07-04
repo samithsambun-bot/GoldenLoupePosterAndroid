@@ -1,16 +1,23 @@
 package com.goldenloupe.poster;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.SpannableString;
@@ -34,18 +41,23 @@ import android.widget.TextView;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends Activity {
     private static final int SYNC_PORT = 45454;
+    private static final int REQUEST_IMAGE_PERMISSION = 7;
     private static final String PREFS = "gold_prices";
+    private static final String SLIDES_FOLDER = "GoldenLoupeSlides";
     private static final int GOLD_LINE = Color.rgb(205, 159, 64);
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -77,6 +89,27 @@ public class MainActivity extends Activity {
     private TextView silverBuy;
     private TextView silverSellGram;
     private TextView silverSellKg;
+    private ImageView slideshowImage;
+    private int[] fallbackSlideshowImages = new int[0];
+    private ArrayList<Uri> slideshowUris = new ArrayList<>();
+    private int slideshowIndex = 0;
+    private final Runnable slideshowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (displayMode && slideshowImage != null && slideshowCount() > 1) {
+                slideshowIndex = (slideshowIndex + 1) % slideshowCount();
+                slideshowImage.animate()
+                        .alpha(0f)
+                        .setDuration(550)
+                        .withEndAction(() -> {
+                            setSlideshowImage(slideshowIndex);
+                            slideshowImage.animate().alpha(1f).setDuration(650).start();
+                        })
+                        .start();
+                handler.postDelayed(this, 6500);
+            }
+        }
+    };
 
     private EditText goldBuyInput;
     private EditText goldSellGramInput;
@@ -114,6 +147,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         listening = false;
         handler.removeCallbacks(clockRunnable);
+        handler.removeCallbacks(slideshowRunnable);
         handler.removeCallbacks(syncRunnable);
         if (multicastLock != null && multicastLock.isHeld()) {
             multicastLock.release();
@@ -166,6 +200,8 @@ public class MainActivity extends Activity {
     private void showControlMode() {
         displayMode = false;
         handler.removeCallbacks(clockRunnable);
+        handler.removeCallbacks(slideshowRunnable);
+        slideshowImage = null;
 
         ScrollView scroll = new ScrollView(this);
         LinearLayout root = new LinearLayout(this);
@@ -337,6 +373,13 @@ public class MainActivity extends Activity {
     private void showDisplayMode() {
         displayMode = true;
         startPriceListener();
+        handler.removeCallbacks(slideshowRunnable);
+        slideshowImage = null;
+
+        if (isPortraitTablet()) {
+            showPortraitDisplayMode();
+            return;
+        }
 
         FrameLayout root = new FrameLayout(this);
         ImageView bg = new ImageView(this);
@@ -412,6 +455,96 @@ public class MainActivity extends Activity {
         startClock();
     }
 
+    private void showPortraitDisplayMode() {
+        handler.removeCallbacks(slideshowRunnable);
+
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Color.rgb(245, 239, 226));
+
+        FrameLayout slideshow = new FrameLayout(this);
+        root.addView(slideshow, new LinearLayout.LayoutParams(-1, 0, 45f));
+
+        slideshowImage = new ImageView(this);
+        slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        fallbackSlideshowImages = slideshowImageResources();
+        slideshowUris = loadTabletSlideshowImages();
+        slideshowIndex = 0;
+        setSlideshowImage(0);
+        slideshow.addView(slideshowImage, new FrameLayout.LayoutParams(-1, -1));
+
+        View tint = new View(this);
+        tint.setBackgroundColor(Color.argb(28, 245, 237, 204));
+        slideshow.addView(tint, new FrameLayout.LayoutParams(-1, -1));
+
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(getResources().getIdentifier("logo", "drawable", getPackageName()));
+        logo.setAdjustViewBounds(true);
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        logo.setOnClickListener(v -> showControlMode());
+        FrameLayout.LayoutParams logoParams = new FrameLayout.LayoutParams(dp(220), dp(178), Gravity.LEFT | Gravity.TOP);
+        logoParams.setMargins(dp(36), dp(38), 0, 0);
+        slideshow.addView(logo, logoParams);
+
+        View separator = new View(this);
+        separator.setBackgroundColor(Color.rgb(232, 164, 14));
+        slideshow.addView(separator, new FrameLayout.LayoutParams(-1, dp(7), Gravity.BOTTOM));
+
+        FrameLayout priceSection = new FrameLayout(this);
+        root.addView(priceSection, new LinearLayout.LayoutParams(-1, 0, 55f));
+
+        ImageView bg = new ImageView(this);
+        bg.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
+        bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        priceSection.addView(bg, new FrameLayout.LayoutParams(-1, -1));
+
+        LinearLayout poster = new LinearLayout(this);
+        poster.setOrientation(LinearLayout.VERTICAL);
+        poster.setGravity(Gravity.CENTER_HORIZONTAL);
+        poster.setPadding(dp(24), dp(18), dp(24), dp(58));
+        priceSection.addView(poster, new FrameLayout.LayoutParams(-1, -1));
+
+        TextView title = heading("DAILY GOLD PRICE", 38);
+        title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
+        title.setGravity(Gravity.CENTER);
+        poster.addView(title);
+
+        TextView chineseTitle = heading("今日金价", 31);
+        chineseTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
+        titleParams.setMargins(0, dp(2), 0, dp(12));
+        poster.addView(chineseTitle, titleParams);
+
+        LinearLayout dateBox = new LinearLayout(this);
+        dateBox.setOrientation(LinearLayout.VERTICAL);
+        dateBox.setGravity(Gravity.CENTER);
+        dateBox.setPadding(dp(24), dp(7), dp(24), dp(7));
+        dateBox.setBackground(roundedBackground(Color.argb(160, 255, 255, 250), dp(22), GOLD_LINE));
+        dateBox.setOnClickListener(v -> showControlMode());
+        LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
+        dateParams.setMargins(0, 0, 0, dp(16));
+        poster.addView(dateBox, dateParams);
+
+        dateText = heading("", 25);
+        dateText.setGravity(Gravity.CENTER);
+        timeText = heading("", 13);
+        timeText.setGravity(Gravity.CENTER);
+        dateBox.addView(dateText);
+        dateBox.addView(timeText);
+
+        LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(-1, 0, 1f);
+        tableParams.setMargins(0, 0, 0, dp(14));
+        poster.addView(priceTable(), tableParams);
+
+        footer(priceSection);
+        goldBar(priceSection);
+        setContentView(root);
+        renderPrices();
+        startClock();
+        startSlideshow();
+        requestImagePermissionIfNeeded();
+    }
+
     private FrameLayout priceTable() {
         FrameLayout shell = new FrameLayout(this);
         shell.setForeground(roundedBackground(Color.TRANSPARENT, dp(14), GOLD_LINE));
@@ -428,7 +561,7 @@ public class MainActivity extends Activity {
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.addView(headerCell("TYPE/种类"), new LinearLayout.LayoutParams(0, -1, 1f));
         header.addView(headerCell("BUY-IN/回收价"), new LinearLayout.LayoutParams(0, -1, 1f));
-        header.addView(headerCell("SELL-OUT/售价"), new LinearLayout.LayoutParams(0, -1, 2f));
+        header.addView(headerCell("SELL/售价"), new LinearLayout.LayoutParams(0, -1, 2f));
         table.addView(header, new LinearLayout.LayoutParams(-1, dp(displaySize(56, 50, 46))));
 
         addProductRow(table, "Au99.99\n黄金", 0);
@@ -597,6 +730,132 @@ public class MainActivity extends Activity {
         handler.post(clockRunnable);
     }
 
+    private void startSlideshow() {
+        handler.removeCallbacks(slideshowRunnable);
+        if (slideshowCount() > 1) {
+            handler.postDelayed(slideshowRunnable, 6500);
+        }
+    }
+
+    private int slideshowCount() {
+        return slideshowUris.isEmpty() ? fallbackSlideshowImages.length : slideshowUris.size();
+    }
+
+    private void setSlideshowImage(int index) {
+        if (slideshowImage == null) return;
+        if (!slideshowUris.isEmpty()) {
+            slideshowImage.setImageURI(slideshowUris.get(index % slideshowUris.size()));
+        } else if (fallbackSlideshowImages.length > 0) {
+            slideshowImage.setImageResource(fallbackSlideshowImages[index % fallbackSlideshowImages.length]);
+        } else {
+            slideshowImage.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
+        }
+    }
+
+    private ArrayList<Uri> loadTabletSlideshowImages() {
+        if (!hasImagePermission()) {
+            return new ArrayList<>();
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return loadSlidesFromMediaStore();
+        }
+        return loadSlidesFromFiles();
+    }
+
+    private ArrayList<Uri> loadSlidesFromMediaStore() {
+        ArrayList<Uri> images = new ArrayList<>();
+        String[] projection = {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.RELATIVE_PATH
+        };
+        String selection = MediaStore.Images.Media.RELATIVE_PATH + " LIKE ?";
+        String[] args = new String[]{"%" + Environment.DIRECTORY_PICTURES + "/" + SLIDES_FOLDER + "/%"};
+        String sort = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
+
+        try (Cursor cursor = getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                args,
+                sort)) {
+            if (cursor == null) return images;
+            int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(idColumn);
+                images.add(Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id)));
+            }
+        } catch (Exception ignored) {
+        }
+        return images;
+    }
+
+    private ArrayList<Uri> loadSlidesFromFiles() {
+        ArrayList<String> paths = new ArrayList<>();
+        File folder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), SLIDES_FOLDER);
+        File[] files = folder.listFiles();
+        if (files == null) return new ArrayList<>();
+        for (File file : files) {
+            String name = file.getName().toLowerCase(Locale.ENGLISH);
+            if (file.isFile() && (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp"))) {
+                paths.add(file.getAbsolutePath());
+            }
+        }
+        Collections.sort(paths);
+        ArrayList<Uri> images = new ArrayList<>();
+        for (String path : paths) {
+            images.add(Uri.fromFile(new File(path)));
+        }
+        return images;
+    }
+
+    private boolean hasImagePermission() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            return checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED;
+        }
+        return Build.VERSION.SDK_INT < 23 ||
+                checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestImagePermissionIfNeeded() {
+        if (!isPortraitTablet() || hasImagePermission()) return;
+        if (Build.VERSION.SDK_INT >= 33) {
+            requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_IMAGE_PERMISSION);
+        } else if (Build.VERSION.SDK_INT >= 23) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_IMAGE_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_IMAGE_PERMISSION && displayMode && slideshowImage != null) {
+            slideshowUris = loadTabletSlideshowImages();
+            slideshowIndex = 0;
+            setSlideshowImage(0);
+            startSlideshow();
+        }
+    }
+
+    private int[] slideshowImageResources() {
+        int count = 0;
+        for (int i = 1; i <= 12; i++) {
+            if (getResources().getIdentifier("slide" + i, "drawable", getPackageName()) != 0) {
+                count++;
+            }
+        }
+
+        int[] images = new int[count];
+        int index = 0;
+        for (int i = 1; i <= 12; i++) {
+            int id = getResources().getIdentifier("slide" + i, "drawable", getPackageName());
+            if (id != 0) {
+                images[index++] = id;
+            }
+        }
+        return images;
+    }
+
     private void footer(FrameLayout root) {
         LinearLayout footer = new LinearLayout(this);
         footer.setGravity(Gravity.CENTER);
@@ -708,6 +967,11 @@ public class MainActivity extends Activity {
     private boolean isTelevision() {
         int mode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_TYPE_MASK;
         return mode == Configuration.UI_MODE_TYPE_TELEVISION;
+    }
+
+    private boolean isPortraitTablet() {
+        return !isTelevision() &&
+                getResources().getDisplayMetrics().heightPixels > getResources().getDisplayMetrics().widthPixels;
     }
 
     private boolean isLargeTelevision() {
