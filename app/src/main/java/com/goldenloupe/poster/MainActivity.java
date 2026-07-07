@@ -878,11 +878,12 @@ public class MainActivity extends Activity {
         item.setPadding(dp(8), 0, dp(8), 0);
         ImageView icon = new ImageView(this);
         icon.setImageResource(getResources().getIdentifier(image, "drawable", getPackageName()));
-        item.addView(icon, new LinearLayout.LayoutParams(dp(displaySize(24, 22, 20)), dp(displaySize(24, 22, 20))));
+        int iconSize = isPortraitTablet() ? 21 : displaySize(24, 22, 20);
+        item.addView(icon, new LinearLayout.LayoutParams(dp(iconSize), dp(iconSize)));
         TextView label = new TextView(this);
         label.setText(text);
         label.setTextColor(Color.WHITE);
-        label.setTextSize(displaySize(15, 13, 11));
+        label.setTextSize(isPortraitTablet() ? 12 : displaySize(15, 13, 11));
         label.setPadding(dp(8), 0, 0, 0);
         item.addView(label);
         return item;
