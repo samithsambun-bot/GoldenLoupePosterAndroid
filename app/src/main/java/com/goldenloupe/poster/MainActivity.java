@@ -516,19 +516,20 @@ public class MainActivity extends Activity {
         poster.addView(chineseTitle, titleParams);
 
         LinearLayout dateBox = new LinearLayout(this);
-        dateBox.setOrientation(LinearLayout.VERTICAL);
+        dateBox.setOrientation(LinearLayout.HORIZONTAL);
         dateBox.setGravity(Gravity.CENTER);
-        dateBox.setPadding(dp(18), dp(4), dp(18), dp(4));
+        dateBox.setPadding(dp(18), dp(3), dp(18), dp(3));
         dateBox.setBackground(roundedBackground(Color.argb(160, 255, 255, 250), dp(22), GOLD_LINE));
         dateBox.setOnClickListener(v -> showControlMode());
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
         dateParams.setMargins(0, 0, 0, dp(8));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 15);
+        dateText = heading("", 13);
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 9);
+        timeText = heading("", 18);
         timeText.setGravity(Gravity.CENTER);
+        timeText.setPadding(dp(14), 0, 0, 0);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
 
@@ -722,8 +723,12 @@ public class MainActivity extends Activity {
 
     private void updateDate() {
         Date now = new Date();
-        dateText.setText("DATE: " + new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(now) +
-                " / 日期: " + new SimpleDateFormat("yyyy年M月d日", Locale.CHINESE).format(now));
+        if (isPortraitTablet()) {
+            dateText.setText("DATE: " + new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(now));
+        } else {
+            dateText.setText("DATE: " + new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(now) +
+                    " / 日期: " + new SimpleDateFormat("yyyy年M月d日", Locale.CHINESE).format(now));
+        }
         timeText.setText(new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(now));
     }
 
