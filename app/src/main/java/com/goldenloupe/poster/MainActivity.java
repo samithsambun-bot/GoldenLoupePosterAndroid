@@ -888,8 +888,13 @@ public class MainActivity extends Activity {
         TextView label = new TextView(this);
         label.setText(text);
         label.setTextColor(Color.WHITE);
-        label.setTextSize(isPortraitTablet() ? 12 : displaySize(15, 13, 11));
-        label.setPadding(dp(8), 0, 0, 0);
+        if (isPortraitTablet()) {
+            label.setTextSize(10);
+            label.setSingleLine(true);
+        } else {
+            label.setTextSize(displaySize(15, 13, 11));
+        }
+        label.setPadding(dp(isPortraitTablet() ? 5 : 8), 0, 0, 0);
         item.addView(label);
         return item;
     }
