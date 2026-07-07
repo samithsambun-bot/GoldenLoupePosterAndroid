@@ -525,9 +525,9 @@ public class MainActivity extends Activity {
         dateParams.setMargins(0, 0, 0, dp(8));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 13);
+        dateText = heading("", 15);
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 18);
+        timeText = heading("", 15);
         timeText.setGravity(Gravity.CENTER);
         timeText.setPadding(dp(14), 0, 0, 0);
         dateBox.addView(dateText);
