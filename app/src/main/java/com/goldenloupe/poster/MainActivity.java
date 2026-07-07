@@ -504,12 +504,12 @@ public class MainActivity extends Activity {
         poster.setPadding(dp(24), dp(8), dp(24), dp(58));
         priceSection.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
-        TextView title = heading("DAILY GOLD PRICE", 29);
+        TextView title = heading("DAILY GOLD PRICE", 25);
         title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
         title.setGravity(Gravity.CENTER);
         poster.addView(title);
 
-        TextView chineseTitle = heading("今日金价", 23);
+        TextView chineseTitle = heading("今日金价", 20);
         chineseTitle.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
         titleParams.setMargins(0, 0, 0, dp(7));
@@ -525,9 +525,9 @@ public class MainActivity extends Activity {
         dateParams.setMargins(0, 0, 0, dp(8));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 18);
+        dateText = heading("", 15);
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 10);
+        timeText = heading("", 9);
         timeText.setGravity(Gravity.CENTER);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
@@ -599,7 +599,7 @@ public class MainActivity extends Activity {
     }
 
     private TextView headerCell(String text) {
-        TextView cell = tableText(text, displaySize(18, 15, 13), true);
+        TextView cell = tableText(text, isPortraitTablet() ? 16 : displaySize(18, 15, 13), true);
         cell.setTextColor(Color.rgb(123, 51, 6));
         cell.setBackground(headerBackground());
         cell.setPadding(dp(4), dp(3), dp(4), dp(1));
@@ -607,14 +607,14 @@ public class MainActivity extends Activity {
     }
 
     private TextView productCell(String text) {
-        TextView cell = tableText(text, displaySize(18, 15, 13), false);
+        TextView cell = tableText(text, isPortraitTablet() ? 16 : displaySize(18, 15, 13), false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setTypeface(Typeface.DEFAULT_BOLD);
         return cell;
     }
 
     private TextView priceCell(String unit) {
-        TextView cell = tableText("", displaySize(23, 19, 17), false);
+        TextView cell = tableText("", isPortraitTablet() ? 20 : displaySize(23, 19, 17), false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
         cell.setGravity(isPortraitTablet() ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
@@ -686,9 +686,9 @@ public class MainActivity extends Activity {
         String formatted = available ? formatCurrency(raw) : "ENQUIRE / 请咨询";
         boolean enquire = formatted.equals("-") || formatted.startsWith("ENQUIRE");
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
-        view.setTextSize(enquire ? displaySize(14, 12, 10) : displaySize(23, 19, 17));
-        view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
         boolean portrait = isPortraitTablet();
+        view.setTextSize(enquire ? (portrait ? 12 : displaySize(14, 12, 10)) : (portrait ? 20 : displaySize(23, 19, 17)));
+        view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
         view.setGravity(enquire || portrait ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
         view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(portrait ? 5 : 14));
         view.setTypeface(enquire ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
