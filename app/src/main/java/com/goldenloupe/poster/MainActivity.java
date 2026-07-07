@@ -482,8 +482,8 @@ public class MainActivity extends Activity {
         logo.setAdjustViewBounds(true);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
         logo.setOnClickListener(v -> showControlMode());
-        FrameLayout.LayoutParams logoParams = new FrameLayout.LayoutParams(dp(220), dp(178), Gravity.LEFT | Gravity.TOP);
-        logoParams.setMargins(dp(36), dp(38), 0, 0);
+        FrameLayout.LayoutParams logoParams = new FrameLayout.LayoutParams(dp(142), dp(112), Gravity.LEFT | Gravity.TOP);
+        logoParams.setMargins(dp(22), dp(20), 0, 0);
         slideshow.addView(logo, logoParams);
 
         View separator = new View(this);
@@ -501,33 +501,33 @@ public class MainActivity extends Activity {
         LinearLayout poster = new LinearLayout(this);
         poster.setOrientation(LinearLayout.VERTICAL);
         poster.setGravity(Gravity.CENTER_HORIZONTAL);
-        poster.setPadding(dp(24), dp(18), dp(24), dp(58));
+        poster.setPadding(dp(24), dp(8), dp(24), dp(58));
         priceSection.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
-        TextView title = heading("DAILY GOLD PRICE", 38);
+        TextView title = heading("DAILY GOLD PRICE", 29);
         title.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
         title.setGravity(Gravity.CENTER);
         poster.addView(title);
 
-        TextView chineseTitle = heading("今日金价", 31);
+        TextView chineseTitle = heading("今日金价", 23);
         chineseTitle.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
-        titleParams.setMargins(0, dp(2), 0, dp(12));
+        titleParams.setMargins(0, 0, 0, dp(7));
         poster.addView(chineseTitle, titleParams);
 
         LinearLayout dateBox = new LinearLayout(this);
         dateBox.setOrientation(LinearLayout.VERTICAL);
         dateBox.setGravity(Gravity.CENTER);
-        dateBox.setPadding(dp(24), dp(7), dp(24), dp(7));
+        dateBox.setPadding(dp(18), dp(4), dp(18), dp(4));
         dateBox.setBackground(roundedBackground(Color.argb(160, 255, 255, 250), dp(22), GOLD_LINE));
         dateBox.setOnClickListener(v -> showControlMode());
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
-        dateParams.setMargins(0, 0, 0, dp(16));
+        dateParams.setMargins(0, 0, 0, dp(8));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", 25);
+        dateText = heading("", 18);
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", 13);
+        timeText = heading("", 10);
         timeText.setGravity(Gravity.CENTER);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
@@ -617,8 +617,9 @@ public class MainActivity extends Activity {
         TextView cell = tableText("", displaySize(23, 19, 17), false);
         setPriceText(cell, "-", unit, false);
         cell.setBackground(cellBackground(Color.argb(120, 255, 255, 255)));
-        cell.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-        cell.setPadding(dp(4), dp(6), dp(4), dp(14));
+        cell.setGravity(isPortraitTablet() ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        int verticalPadding = isPortraitTablet() ? dp(5) : dp(14);
+        cell.setPadding(dp(4), dp(6), dp(4), verticalPadding);
         return cell;
     }
 
@@ -687,8 +688,9 @@ public class MainActivity extends Activity {
         setPriceText(view, enquire ? "ENQUIRE / 请咨询" : formatted, unit, enquire);
         view.setTextSize(enquire ? displaySize(14, 12, 10) : displaySize(23, 19, 17));
         view.setTextColor(enquire ? Color.rgb(145, 102, 36) : Color.rgb(106, 62, 30));
-        view.setGravity(enquire ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
-        view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(14));
+        boolean portrait = isPortraitTablet();
+        view.setGravity(enquire || portrait ? Gravity.CENTER : Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        view.setPadding(dp(4), enquire ? dp(3) : dp(6), dp(4), enquire ? dp(3) : dp(portrait ? 5 : 14));
         view.setTypeface(enquire ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
     }
 
