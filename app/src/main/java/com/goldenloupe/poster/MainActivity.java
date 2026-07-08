@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -42,6 +44,7 @@ import android.widget.TextView;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -57,7 +60,9 @@ public class MainActivity extends Activity {
     private static final int SYNC_PORT = 45454;
     private static final int REQUEST_IMAGE_PERMISSION = 7;
     private static final String PREFS = "gold_prices";
-    private static final String SLIDES_FOLDER = "GoldenLoupeSlides";
+    private static final String TABLET_SLIDES_FOLDER = "GoldenLoupeSlides";
+    private static final String TV_SLIDES_FOLDER = "TV slideshow_TV_cropped_2220x2010";
+    private static final float TV_SLIDE_ASPECT = 2220f / 2010f;
     private static final int GOLD_LINE = Color.rgb(205, 159, 64);
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -89,6 +94,7 @@ public class MainActivity extends Activity {
     private TextView silverBuy;
     private TextView silverSellGram;
     private TextView silverSellKg;
+    private ImageView slideshowBackground;
     private ImageView slideshowImage;
     private int[] fallbackSlideshowImages = new int[0];
     private ArrayList<Uri> slideshowUris = new ArrayList<>();
@@ -201,6 +207,7 @@ public class MainActivity extends Activity {
         displayMode = false;
         handler.removeCallbacks(clockRunnable);
         handler.removeCallbacks(slideshowRunnable);
+        slideshowBackground = null;
         slideshowImage = null;
 
         ScrollView scroll = new ScrollView(this);
@@ -374,6 +381,7 @@ public class MainActivity extends Activity {
         displayMode = true;
         startPriceListener();
         handler.removeCallbacks(slideshowRunnable);
+        slideshowBackground = null;
         slideshowImage = null;
 
         if (isPortraitTablet()) {
@@ -382,20 +390,33 @@ public class MainActivity extends Activity {
         }
 
         FrameLayout root = new FrameLayout(this);
+
+        LinearLayout screen = new LinearLayout(this);
+        screen.setOrientation(LinearLayout.HORIZONTAL);
+        screen.setBackgroundColor(Color.rgb(245, 239, 226));
+        screen.setPadding(0, 0, 0, dp(displaySize(54, 50, 46)));
+        root.addView(screen, new FrameLayout.LayoutParams(-1, -1));
+
+        screen.addView(tvSlideshowPanel(), new LinearLayout.LayoutParams(0, -1, 58f));
+
+        FrameLayout priceArea = new FrameLayout(this);
+        screen.addView(priceArea, new LinearLayout.LayoutParams(0, -1, 42f));
+
         ImageView bg = new ImageView(this);
         bg.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
         bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        root.addView(bg, new FrameLayout.LayoutParams(-1, -1));
+        priceArea.addView(bg, new FrameLayout.LayoutParams(-1, -1));
 
         LinearLayout poster = new LinearLayout(this);
         poster.setOrientation(LinearLayout.VERTICAL);
         poster.setGravity(Gravity.CENTER_HORIZONTAL);
-        poster.setPadding(dp(displaySize(48, 30, 20)), dp(6), dp(displaySize(48, 30, 20)), dp(58));
-        root.addView(poster, new FrameLayout.LayoutParams(-1, -1));
+        poster.setPadding(dp(displaySize(40, 26, 18)), dp(displaySize(24, 18, 12)), dp(displaySize(40, 26, 18)), dp(14));
+        priceArea.addView(poster, new FrameLayout.LayoutParams(-1, -1));
 
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setVisibility(View.GONE);
         poster.addView(header, new LinearLayout.LayoutParams(-1, dp(displaySize(102, 92, 82))));
 
         ImageView logo = new ImageView(this);
@@ -420,20 +441,34 @@ public class MainActivity extends Activity {
 
         header.addView(new View(this), new LinearLayout.LayoutParams(dp(displaySize(214, 178, 154)), 1));
 
+        TextView tvTitle = heading("DAILY GOLD PRICE", displaySize(35, 30, 26));
+        tvTitle.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
+        tvTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams tvTitleParams = new LinearLayout.LayoutParams(-1, -2);
+        tvTitleParams.setMargins(0, 0, 0, dp(5));
+        poster.addView(tvTitle, tvTitleParams);
+
+        TextView tvChineseTitle = heading("ä»Šæ—¥é‡‘ä»·", displaySize(27, 23, 20));
+        tvChineseTitle.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams tvChineseTitleParams = new LinearLayout.LayoutParams(-1, -2);
+        tvChineseTitleParams.setMargins(0, 0, 0, dp(displaySize(18, 14, 10)));
+        poster.addView(tvChineseTitle, tvChineseTitleParams);
+
         LinearLayout dateBox = new LinearLayout(this);
-        dateBox.setOrientation(LinearLayout.VERTICAL);
+        dateBox.setOrientation(LinearLayout.HORIZONTAL);
         dateBox.setGravity(Gravity.CENTER);
-        dateBox.setPadding(dp(24), dp(5), dp(24), dp(5));
+        dateBox.setPadding(dp(24), dp(6), dp(24), dp(6));
         dateBox.setBackground(roundedBackground(Color.argb(150, 255, 255, 250), dp(18), GOLD_LINE));
         dateBox.setOnClickListener(v -> showControlMode());
         LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(-2, -2);
-        dateParams.setMargins(0, dp(6), 0, dp(10));
+        dateParams.setMargins(0, 0, 0, dp(displaySize(20, 14, 10)));
         poster.addView(dateBox, dateParams);
 
-        dateText = heading("", displaySize(19, 16, 14));
+        dateText = heading("", displaySize(16, 14, 12));
         dateText.setGravity(Gravity.CENTER);
-        timeText = heading("", displaySize(12, 10, 9));
+        timeText = heading("", displaySize(16, 14, 12));
         timeText.setGravity(Gravity.CENTER);
+        timeText.setPadding(dp(24), 0, 0, 0);
         dateBox.addView(dateText);
         dateBox.addView(timeText);
 
@@ -453,10 +488,47 @@ public class MainActivity extends Activity {
         setContentView(root);
         renderPrices();
         startClock();
+        startSlideshow();
+        requestImagePermissionIfNeeded();
+    }
+
+    private FrameLayout tvSlideshowPanel() {
+        FrameLayout slideshow = new FrameLayout(this);
+        slideshow.setBackgroundColor(Color.rgb(18, 16, 14));
+
+        slideshowBackground = new ImageView(this);
+        slideshowBackground.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        slideshowBackground.setAlpha(0.82f);
+        slideshow.addView(slideshowBackground, new FrameLayout.LayoutParams(-1, -1));
+
+        slideshowImage = new ImageView(this);
+        slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        fallbackSlideshowImages = slideshowImageResources();
+        slideshowUris = loadTabletSlideshowImages();
+        slideshowIndex = 0;
+        setSlideshowImage(0);
+        slideshow.addView(slideshowImage, new FrameLayout.LayoutParams(-1, -1));
+
+        View divider = new View(this);
+        divider.setBackgroundColor(Color.rgb(232, 164, 14));
+        slideshow.addView(divider, new FrameLayout.LayoutParams(dp(6), -1, Gravity.RIGHT));
+
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(getResources().getIdentifier("logo", "drawable", getPackageName()));
+        logo.setAdjustViewBounds(true);
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        logo.setAlpha(0.82f);
+        logo.setOnClickListener(v -> showControlMode());
+        FrameLayout.LayoutParams logoParams = new FrameLayout.LayoutParams(dp(displaySize(164, 126, 104)), dp(displaySize(96, 76, 64)), Gravity.LEFT | Gravity.TOP);
+        logoParams.setMargins(dp(26), dp(22), 0, 0);
+        slideshow.addView(logo, logoParams);
+
+        return slideshow;
     }
 
     private void showPortraitDisplayMode() {
         handler.removeCallbacks(slideshowRunnable);
+        slideshowBackground = null;
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -751,12 +823,114 @@ public class MainActivity extends Activity {
     private void setSlideshowImage(int index) {
         if (slideshowImage == null) return;
         if (!slideshowUris.isEmpty()) {
-            slideshowImage.setImageURI(slideshowUris.get(index % slideshowUris.size()));
+            Uri uri = slideshowUris.get(index % slideshowUris.size());
+            if (slideshowBackground != null && !isPortraitTablet()) {
+                setSmartTvSlide(uri);
+            } else {
+                slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                slideshowImage.setImageURI(uri);
+            }
         } else if (fallbackSlideshowImages.length > 0) {
+            if (slideshowBackground != null) slideshowBackground.setVisibility(View.GONE);
+            slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             slideshowImage.setImageResource(fallbackSlideshowImages[index % fallbackSlideshowImages.length]);
         } else {
+            if (slideshowBackground != null) slideshowBackground.setVisibility(View.GONE);
+            slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             slideshowImage.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
         }
+    }
+
+    private void setSmartTvSlide(Uri uri) {
+        float aspect = imageAspect(uri);
+        boolean fullFrame = aspect > 0 && Math.abs(aspect - TV_SLIDE_ASPECT) < 0.08f;
+        if (fullFrame) {
+            slideshowBackground.setVisibility(View.GONE);
+            slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            slideshowImage.setImageURI(uri);
+            return;
+        }
+
+        slideshowBackground.setVisibility(View.VISIBLE);
+        Bitmap blurred = blurredSlideBitmap(uri);
+        if (blurred != null) {
+            slideshowBackground.setImageBitmap(blurred);
+        } else {
+            slideshowBackground.setImageURI(uri);
+        }
+        slideshowImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        slideshowImage.setImageURI(uri);
+    }
+
+    private float imageAspect(Uri uri) {
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(stream, null, options);
+            if (options.outWidth <= 0 || options.outHeight <= 0) return 0f;
+            return (float) options.outWidth / (float) options.outHeight;
+        } catch (Exception ignored) {
+            return 0f;
+        }
+    }
+
+    private Bitmap blurredSlideBitmap(Uri uri) {
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 8;
+            Bitmap source = BitmapFactory.decodeStream(stream, null, options);
+            if (source == null) return null;
+            Bitmap scaled = Bitmap.createScaledBitmap(source, Math.max(1, source.getWidth() / 2), Math.max(1, source.getHeight() / 2), true);
+            if (scaled != source) source.recycle();
+            return boxBlur(scaled, 10);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private Bitmap boxBlur(Bitmap bitmap, int radius) {
+        if (radius < 1) return bitmap;
+        Bitmap blurred = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        int width = blurred.getWidth();
+        int height = blurred.getHeight();
+        int[] pixels = new int[width * height];
+        int[] temp = new int[width * height];
+        blurred.getPixels(pixels, 0, width, 0, 0, width, height);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int a = 0, r = 0, g = 0, b = 0, count = 0;
+                for (int dx = -radius; dx <= radius; dx++) {
+                    int nx = Math.max(0, Math.min(width - 1, x + dx));
+                    int color = pixels[y * width + nx];
+                    a += Color.alpha(color);
+                    r += Color.red(color);
+                    g += Color.green(color);
+                    b += Color.blue(color);
+                    count++;
+                }
+                temp[y * width + x] = Color.argb(a / count, r / count, g / count, b / count);
+            }
+        }
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int a = 0, r = 0, g = 0, b = 0, count = 0;
+                for (int dy = -radius; dy <= radius; dy++) {
+                    int ny = Math.max(0, Math.min(height - 1, y + dy));
+                    int color = temp[ny * width + x];
+                    a += Color.alpha(color);
+                    r += Color.red(color);
+                    g += Color.green(color);
+                    b += Color.blue(color);
+                    count++;
+                }
+                pixels[y * width + x] = Color.argb(a / count, r / count, g / count, b / count);
+            }
+        }
+        blurred.setPixels(pixels, 0, width, 0, 0, width, height);
+        if (bitmap != blurred) bitmap.recycle();
+        return blurred;
     }
 
     private ArrayList<Uri> loadTabletSlideshowImages() {
@@ -769,6 +943,10 @@ public class MainActivity extends Activity {
         return loadSlidesFromFiles();
     }
 
+    private String currentSlidesFolder() {
+        return isPortraitTablet() ? TABLET_SLIDES_FOLDER : TV_SLIDES_FOLDER;
+    }
+
     private ArrayList<Uri> loadSlidesFromMediaStore() {
         ArrayList<Uri> images = new ArrayList<>();
         String[] projection = {
@@ -777,7 +955,7 @@ public class MainActivity extends Activity {
                 MediaStore.Images.Media.RELATIVE_PATH
         };
         String selection = MediaStore.Images.Media.RELATIVE_PATH + " LIKE ?";
-        String[] args = new String[]{"%" + Environment.DIRECTORY_PICTURES + "/" + SLIDES_FOLDER + "/%"};
+        String[] args = new String[]{"%" + currentSlidesFolder() + "/%"};
         String sort = MediaStore.Images.Media.DISPLAY_NAME + " ASC";
 
         try (Cursor cursor = getContentResolver().query(
@@ -799,13 +977,22 @@ public class MainActivity extends Activity {
 
     private ArrayList<Uri> loadSlidesFromFiles() {
         ArrayList<String> paths = new ArrayList<>();
-        File folder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), SLIDES_FOLDER);
-        File[] files = folder.listFiles();
-        if (files == null) return new ArrayList<>();
-        for (File file : files) {
-            String name = file.getName().toLowerCase(Locale.ENGLISH);
-            if (file.isFile() && (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp"))) {
-                paths.add(file.getAbsolutePath());
+        ArrayList<File> folders = new ArrayList<>();
+        String folderName = currentSlidesFolder();
+        folders.add(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), folderName));
+        folders.add(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), folderName));
+        folders.add(new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), folderName));
+        folders.add(new File(Environment.getExternalStorageDirectory(), folderName));
+        addMountedStorageFolders(folders, folderName);
+
+        for (File folder : folders) {
+            File[] files = folder.listFiles();
+            if (files == null) continue;
+            for (File file : files) {
+                String name = file.getName().toLowerCase(Locale.ENGLISH);
+                if (file.isFile() && (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".webp"))) {
+                    paths.add(file.getAbsolutePath());
+                }
             }
         }
         Collections.sort(paths);
@@ -814,6 +1001,20 @@ public class MainActivity extends Activity {
             images.add(Uri.fromFile(new File(path)));
         }
         return images;
+    }
+
+    private void addMountedStorageFolders(ArrayList<File> folders, String folderName) {
+        File storageRoot = new File("/storage");
+        File[] mounts = storageRoot.listFiles();
+        if (mounts == null) return;
+        for (File mount : mounts) {
+            if (!mount.isDirectory() || "emulated".equals(mount.getName()) || "self".equals(mount.getName())) {
+                continue;
+            }
+            folders.add(new File(mount, folderName));
+            folders.add(new File(new File(mount, Environment.DIRECTORY_PICTURES), folderName));
+            folders.add(new File(new File(mount, Environment.DIRECTORY_DOWNLOADS), folderName));
+        }
     }
 
     private boolean hasImagePermission() {
@@ -825,7 +1026,7 @@ public class MainActivity extends Activity {
     }
 
     private void requestImagePermissionIfNeeded() {
-        if (!isPortraitTablet() || hasImagePermission()) return;
+        if (hasImagePermission()) return;
         if (Build.VERSION.SDK_INT >= 33) {
             requestPermissions(new String[]{Manifest.permission.READ_MEDIA_IMAGES}, REQUEST_IMAGE_PERMISSION);
         } else if (Build.VERSION.SDK_INT >= 23) {
