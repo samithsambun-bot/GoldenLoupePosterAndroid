@@ -535,7 +535,7 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(Color.rgb(245, 239, 226));
 
         FrameLayout slideshow = new FrameLayout(this);
-        root.addView(slideshow, new LinearLayout.LayoutParams(-1, 0, 47f));
+        root.addView(slideshow, new LinearLayout.LayoutParams(-1, 0, 50f));
 
         slideshowImage = new ImageView(this);
         slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -563,7 +563,7 @@ public class MainActivity extends Activity {
         slideshow.addView(separator, new FrameLayout.LayoutParams(-1, dp(7), Gravity.BOTTOM));
 
         FrameLayout priceSection = new FrameLayout(this);
-        root.addView(priceSection, new LinearLayout.LayoutParams(-1, 0, 53f));
+        root.addView(priceSection, new LinearLayout.LayoutParams(-1, 0, 50f));
 
         ImageView bg = new ImageView(this);
         bg.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
@@ -657,7 +657,7 @@ public class MainActivity extends Activity {
         row.addView(sellGram, new LinearLayout.LayoutParams(0, -1, 1f));
         row.addView(sellKg, new LinearLayout.LayoutParams(0, -1, 1f));
         LinearLayout.LayoutParams rowParams = isPortraitTablet()
-                ? new LinearLayout.LayoutParams(-1, dp(108))
+                ? new LinearLayout.LayoutParams(-1, dp(76))
                 : new LinearLayout.LayoutParams(-1, 0, 1f);
         table.addView(row, rowParams);
 
