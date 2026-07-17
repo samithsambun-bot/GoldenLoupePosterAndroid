@@ -535,7 +535,7 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(Color.rgb(245, 239, 226));
 
         FrameLayout slideshow = new FrameLayout(this);
-        root.addView(slideshow, new LinearLayout.LayoutParams(-1, 0, 45f));
+        root.addView(slideshow, new LinearLayout.LayoutParams(-1, 0, 47f));
 
         slideshowImage = new ImageView(this);
         slideshowImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -563,7 +563,7 @@ public class MainActivity extends Activity {
         slideshow.addView(separator, new FrameLayout.LayoutParams(-1, dp(7), Gravity.BOTTOM));
 
         FrameLayout priceSection = new FrameLayout(this);
-        root.addView(priceSection, new LinearLayout.LayoutParams(-1, 0, 55f));
+        root.addView(priceSection, new LinearLayout.LayoutParams(-1, 0, 53f));
 
         ImageView bg = new ImageView(this);
         bg.setImageResource(getResources().getIdentifier("background", "drawable", getPackageName()));
@@ -605,7 +605,9 @@ public class MainActivity extends Activity {
         dateBox.addView(dateText);
         dateBox.addView(timeText);
 
-        LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(-1, 0, 1f);
+        LinearLayout.LayoutParams tableParams = isPortraitTablet()
+                ? new LinearLayout.LayoutParams(-1, -2)
+                : new LinearLayout.LayoutParams(-1, 0, 1f);
         tableParams.setMargins(0, 0, 0, dp(14));
         poster.addView(priceTable(), tableParams);
 
@@ -654,7 +656,10 @@ public class MainActivity extends Activity {
         row.addView(buy, new LinearLayout.LayoutParams(0, -1, 1f));
         row.addView(sellGram, new LinearLayout.LayoutParams(0, -1, 1f));
         row.addView(sellKg, new LinearLayout.LayoutParams(0, -1, 1f));
-        table.addView(row, new LinearLayout.LayoutParams(-1, 0, 1f));
+        LinearLayout.LayoutParams rowParams = isPortraitTablet()
+                ? new LinearLayout.LayoutParams(-1, dp(108))
+                : new LinearLayout.LayoutParams(-1, 0, 1f);
+        table.addView(row, rowParams);
 
         if (index == 0) {
             goldBuy = buy;
