@@ -715,7 +715,7 @@ public class MainActivity extends Activity {
     private GradientDrawable cellBackground(int color) {
         GradientDrawable background = new GradientDrawable();
         background.setColor(color);
-        background.setStroke(1, Color.argb(175, 205, 159, 64));
+        background.setStroke(1, Color.argb(80, 205, 159, 64));
         return background;
     }
 
